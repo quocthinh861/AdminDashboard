@@ -70,6 +70,7 @@ const Table = ({ columns, data }) => {
     {
       columns,
       data,
+      initialState: { pageIndex: 0, pageSize: 3 },
     },
     useFilters,
     useGlobalFilter,
@@ -140,7 +141,7 @@ const Table = ({ columns, data }) => {
                           return (
                             <td
                               {...cell.getCellProps()}
-                              className="px-6 py-4 whitespace-nowrap"
+                              className="px-6 py-4 whitespace-nowrap description-cell"
                               role="cell"
                             >
                               {cell.column.Cell.name === "defaultRenderer" ? (
@@ -186,7 +187,7 @@ const Table = ({ columns, data }) => {
                   setPageSize(Number(e.target.value));
                 }}
               >
-                {[5, 10, 20].map((pageSize) => (
+                {[3, 5, 10].map((pageSize) => (
                   <option key={pageSize} value={pageSize}>
                     Show {pageSize}
                   </option>

@@ -2,7 +2,6 @@ import React, { useState, useRef } from "react";
 import supabase from "../../client/SuperbaseClient";
 import { uploadImage } from "../../shared/Utils";
 
-
 function UploadForm() {
   // Refs
   const fileInputRef = useRef(null);
@@ -16,7 +15,7 @@ function UploadForm() {
   const [salePrice, setSalePrice] = useState();
   const [errors, setErrors] = useState({});
   const [thumbnailImageUrl, setThumbnailImageUrl] = useState("");
-  const [productImagesUrls, setProductImagesUrls] = useState<string[]>([]);
+  const [productImagesUrls, setProductImagesUrls] = useState([]);
 
   // State to show loading spinner
   const [isUploading, setIsUploading] = useState(false);
@@ -29,14 +28,15 @@ function UploadForm() {
   // Defind functions
   const handleSubmit = async (event) => {
     event.preventDefault();
-    confirm("Bạn có chắc chắn muốn thêm sản phẩm này không?");
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
 
     if (validate()) {
       setIsUploading(true);
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
+      confirm("Bạn có chắc chắn muốn thêm sản phẩm này không?");
 
       try {
         //Upload images to storage
