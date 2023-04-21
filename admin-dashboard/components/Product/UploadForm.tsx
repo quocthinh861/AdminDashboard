@@ -1,7 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import supabase from "../../client/SuperbaseClient";
 import { uploadImage } from "../../shared/Utils";
+
+
 function UploadForm() {
+  // Refs
+  const fileInputRef = useRef(null);
+
   // Form fields
   const [productName, setProductName] = useState("");
   const [productDescription, setProductDescription] = useState("");
@@ -10,6 +15,8 @@ function UploadForm() {
   const [productPrice, setProductPrice] = useState();
   const [salePrice, setSalePrice] = useState();
   const [errors, setErrors] = useState({});
+  const [thumbnailImageUrl, setThumbnailImageUrl] = useState("");
+  const [productImagesUrls, setProductImagesUrls] = useState<string[]>([]);
 
   // State to show loading spinner
   const [isUploading, setIsUploading] = useState(false);
@@ -19,6 +26,7 @@ function UploadForm() {
     ? "bg-gray-500 cursor-not-allowed"
     : "bg-blue-500";
 
+  // Defind functions
   const handleSubmit = async (event) => {
     event.preventDefault();
     confirm("Bạn có chắc chắn muốn thêm sản phẩm này không?");
@@ -50,11 +58,13 @@ function UploadForm() {
           product_images: productImagesKeys,
           price: productPrice,
           sale_price: salePrice,
-        }
+        };
 
-        const { data, error } = await supabase.from("products").insert([product]);
+        const { data, error } = await supabase
+          .from("products")
+          .insert([product]);
 
-        if(error) {
+        if (error) {
           throw error;
         }
 
@@ -68,11 +78,42 @@ function UploadForm() {
 
         alert("Thêm sản phẩm thành công!");
       } catch (error) {
+        // Delete uploaded images
+        if (thumbnailImage !== null) {
+          await supabase.storage.from("images").remove([thumbnailImage]);
+        }
+
+        if (productImages !== null && productImages.length > 0) {
+          await Promise.all(
+            productImages.map((imageKey) =>
+              supabase.storage.from("images").remove([imageKey])
+            )
+          );
+        }
+
         alert("Đã xảy ra lỗi, vui lòng thử lại!");
         console.log("error", error);
       } finally {
         setIsUploading(false);
       }
+    }
+  };
+
+  const removeProductImage = (index) => {
+    const newProductImages = [...productImages];
+    newProductImages.splice(index, 1);
+    setProductImages(newProductImages);
+
+    const newProductImagesUrls = [...productImagesUrls];
+    newProductImagesUrls.splice(index, 1);
+    setProductImagesUrls(newProductImagesUrls);
+  };
+
+  const removeThumbImage = () => {
+    setThumbnailImage("");
+    setThumbnailImageUrl("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -191,9 +232,26 @@ function UploadForm() {
             id="thumbnail-image"
             name="thumbnail-image"
             accept="image/*"
+            ref={fileInputRef}
             className="w-full py-2 px-4 bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 placeholder-gray-400 mt-1"
-            onChange={(event: any) => setThumbnailImage(event.target.files[0])}
+            onChange={(event: any) => {
+              const file = event.target.files[0];
+              setThumbnailImage(file);
+              setThumbnailImageUrl(URL.createObjectURL(file));
+            }}
           />
+          {thumbnailImageUrl && (
+            <div className="relative w-48">
+              <button
+                type="button"
+                className="absolute top-0 right-0 mt-2 mr-2 rounded-full bg-red-500 text-white w-6 h-6 flex items-center justify-center"
+                onClick={() => removeThumbImage()}
+              >
+                X
+              </button>
+              <img src={thumbnailImageUrl} alt="Thumbnail" className="my-4" />
+            </div>
+          )}
         </div>
         <div className="mb-4">
           <label
@@ -209,10 +267,29 @@ function UploadForm() {
             accept="image/*"
             multiple
             className="w-full py-2 px-4 bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 placeholder-gray-400 mt-1"
-            onChange={(event: any) =>
-              setProductImages(Array.from(event.target.files))
-            }
+            onChange={(event: any) => {
+              setProductImages(Array.from(event.target.files));
+              setProductImagesUrls(
+                Array.from(event.target.files as FileList).map((file) =>
+                  URL.createObjectURL(file)
+                )
+              );
+            }}
           />
+          <div className="flex flex-wrap">
+            {productImagesUrls.map((image, index) => (
+              <div className="relative w-48 mr-2">
+                <button
+                  type="button"
+                  className="absolute top-0 right-0 mt-2 mr-2 rounded-full bg-red-500 text-white w-6 h-6 flex items-center justify-center"
+                  onClick={() => removeProductImage(index)}
+                >
+                  X
+                </button>
+                <img src={image} alt="Thumbnail" className="my-4" />
+              </div>
+            ))}
+          </div>
         </div>
         <div className="mb-4">
           <label

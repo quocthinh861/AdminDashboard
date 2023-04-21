@@ -1,5 +1,4 @@
 import supabase from "../client/SuperbaseClient";
-import { v4 as uuidv4 } from "uuid";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
