@@ -28,15 +28,16 @@ function UploadForm() {
   // Defind functions
   const handleSubmit = async (event) => {
     event.preventDefault();
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    scrollToTop();
 
     if (validate()) {
       setIsUploading(true);
-      confirm("Bạn có chắc chắn muốn thêm sản phẩm này không?");
+
+      const userConfirmed = window.confirm(
+        "Bạn có chắc chắn muốn thêm sản phẩm này không?"
+      );
+      if (!userConfirmed) return;
+      scrollToTop();
 
       try {
         //Upload images to storage
@@ -98,6 +99,15 @@ function UploadForm() {
       }
     }
   };
+
+  function scrollToTop() {
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }, 100);
+  }
 
   const removeProductImage = (index) => {
     const newProductImages = [...productImages];
