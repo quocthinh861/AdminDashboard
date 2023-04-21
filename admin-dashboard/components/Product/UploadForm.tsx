@@ -1,20 +1,78 @@
 import React, { useState } from "react";
-
+import supabase from "../../client/SuperbaseClient";
+import { uploadImage } from "../../shared/Utils";
 function UploadForm() {
+  // Form fields
   const [productName, setProductName] = useState("");
   const [productDescription, setProductDescription] = useState("");
   const [thumbnailImage, setThumbnailImage] = useState("");
   const [productImages, setProductImages] = useState([]);
-  const [productPrice, setProductPrice] = useState("");
-  const [salePrice, setSalePrice] = useState("");
-  const [errors, setErrors] = useState(null);
+  const [productPrice, setProductPrice] = useState();
+  const [salePrice, setSalePrice] = useState();
+  const [errors, setErrors] = useState({});
 
-  const handleSubmit = (event) => {
+  // State to show loading spinner
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Define a variable for the button class
+  const buttonClass = isUploading
+    ? "bg-gray-500 cursor-not-allowed"
+    : "bg-blue-500";
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    // Xử lý logic khi người dùng nhấn nút Submit ở đây
+    confirm("Bạn có chắc chắn muốn thêm sản phẩm này không?");
 
     if (validate()) {
-      // Xử lý logic khi người dùng nhấn nút Submit ở đây
+      setIsUploading(true);
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+
+      try {
+        //Upload images to storage
+        const thumbnailImageKey = await uploadImage(thumbnailImage);
+        const productImagesKeys = await Promise.all(
+          productImages.map((image) => uploadImage(image))
+        );
+
+        if (thumbnailImageKey === null || productImagesKeys === null) {
+          alert("Lỗi upload ảnh, vui lòng thử lại!");
+          return;
+        }
+
+        // Insert product to database
+        const product = {
+          name: productName,
+          description: productDescription,
+          thumbnail_image: thumbnailImageKey,
+          product_images: productImagesKeys,
+          price: productPrice,
+          sale_price: salePrice,
+        }
+
+        const { data, error } = await supabase.from("products").insert([product]);
+
+        if(error) {
+          throw error;
+        }
+
+        // Reset form fields
+        setProductName("");
+        setProductDescription("");
+        setThumbnailImage("");
+        setProductImages([]);
+        setProductPrice(undefined);
+        setSalePrice(undefined);
+
+        alert("Thêm sản phẩm thành công!");
+      } catch (error) {
+        alert("Đã xảy ra lỗi, vui lòng thử lại!");
+        console.log("error", error);
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
@@ -49,14 +107,14 @@ function UploadForm() {
     <>
       {
         // Hiển thị lỗi ở đây
-        errors && (
+        Object.keys(errors).length > 0 && (
           <div
             className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
             role="alert"
           >
             <button
               className="absolute top-0 right-0 px-2 py-1"
-              onClick={() => setErrors(null)}
+              onClick={() => setErrors({})}
             >
               <svg
                 className="h-4 w-4 fill-current"
@@ -71,14 +129,21 @@ function UploadForm() {
               </svg>
             </button>
             <strong className="font-bold">Đã xảy ra lỗi! </strong>
-            <span className="block sm:inline">
-              Hãy sửa các lỗi dưới đây:
-            </span>
+            <span className="block sm:inline">Hãy sửa các lỗi dưới đây:</span>
             <ul className="list-disc list-inside">
               {Object.keys(errors).map((key) => (
                 <li key={key}>{errors[key]}</li>
               ))}
             </ul>
+          </div>
+        )
+      }
+      {
+        // Hiển thị loading spinner
+        isUploading && (
+          <div className="flex flex-col items-center my-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
+            <p className="text-gray-700 mt-2">Đang xử lý...</p>
           </div>
         )
       }
@@ -127,7 +192,7 @@ function UploadForm() {
             name="thumbnail-image"
             accept="image/*"
             className="w-full py-2 px-4 bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 placeholder-gray-400 mt-1"
-            onChange={(event) => setThumbnailImage(event.target.files[0])}
+            onChange={(event: any) => setThumbnailImage(event.target.files[0])}
           />
         </div>
         <div className="mb-4">
@@ -144,7 +209,7 @@ function UploadForm() {
             accept="image/*"
             multiple
             className="w-full py-2 px-4 bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 placeholder-gray-400 mt-1"
-            onChange={(event) =>
+            onChange={(event: any) =>
               setProductImages(Array.from(event.target.files))
             }
           />
@@ -154,17 +219,17 @@ function UploadForm() {
             htmlFor="product-price"
             className="block text-gray-700 font-medium mb-2"
           >
-            Giá tiền (là giá gốc)
+            Giá tiền
           </label>
           <input
             type="number"
             id="product-price"
+            min={0}
             name="product-price"
-            min="0"
-            step="1000"
             className="w-full py-2 px-4 bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 placeholder-gray-400 mt-1"
+            placeholder="Nhập giá bán"
             value={productPrice}
-            onChange={(event) => setProductPrice(event.target.value)}
+            onChange={(event: any) => setProductPrice(event.target.value)}
           />
         </div>
         <div className="mb-4">
@@ -172,23 +237,24 @@ function UploadForm() {
             htmlFor="sale-price"
             className="block text-gray-700 font-medium mb-2"
           >
-            Giá khuyến mãi
+            Giá khuyến mãi (nếu có)
           </label>
           <input
             type="number"
             id="sale-price"
+            min={0}
             name="sale-price"
-            min="0"
-            step="1000"
+            placeholder="0"
             className="w-full py-2 px-4 bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 placeholder-gray-400 mt-1"
             value={salePrice}
-            onChange={(event) => setSalePrice(event.target.value)}
+            onChange={(event: any) => setSalePrice(event.target.value)}
           />
         </div>
         <div className="flex justify-center">
           <button
             type="submit"
-            className="bg-blue-500 text-white rounded-md py-2 px-4 font-medium text-sm focus:outline-none focus:shadow-outline-blue focus:border-blue-700 active:bg-blue-700 transition duration-150 ease-in-out"
+            disabled={isUploading}
+            className={`${buttonClass} text-white rounded-md py-2 px-4 font-medium text-sm focus:outline-none focus:shadow-outline-blue focus:border-blue-700 active:bg-blue-700 transition duration-150 ease-in-out`}
           >
             Submit
           </button>

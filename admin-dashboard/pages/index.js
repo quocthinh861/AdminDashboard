@@ -7,7 +7,6 @@ import React, { useEffect } from 'react'
 import Header from '../components/Header'
 import { Button } from '../components/Button'
 import UploadForm from '../components/Product/UploadForm'
-import supabase from '../client/SuperbaseClient'
 
 const getData = () => {
   const data = [
@@ -82,24 +81,6 @@ const getData = () => {
 }
 
 export default function Home() {
-  useEffect(() => {
-    try {
-      const fetchData = async () => {
-        const { result, error } = await supabase
-          .from('products')
-          .select()
-
-          console.log('result', result)
-      }
-
-      console.log('Start calling supabase from index.js')
-      fetchData()
-      console.log('Success calling supabase from index.js')
-    } catch (error) {
-      console.error('Fail calling supabase from index.js', error)
-    }
-    console.log('Stop calling supabase from index.js')
-  }, [])
 
   const columns = React.useMemo(
     () => [
