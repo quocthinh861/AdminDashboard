@@ -86,7 +86,7 @@ export default function Home() {
         Cell: ({ value }) => `${value}%`,
       },
       {
-        Header: 'Delete',
+        Header: 'Action',
         accessor: 'delete',
         Cell: ({ row }) => (
           <Button onClick={() => handleDelete(row)} className={`text-red-500`}>
