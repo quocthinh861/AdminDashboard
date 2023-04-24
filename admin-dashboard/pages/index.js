@@ -38,7 +38,7 @@ export default function Home() {
 
       const updatedProducts = data.map((product) => {
         // calculate discount percentage
-        const discountPercentage = product.price > 0 && product.sale_price < product.price
+        const discountPercentage = product.sale_price > 0 && product.sale_price < product.price
         ? parseFloat(((product.price - product.sale_price) / product.price * 100).toFixed(2))
         : 0;
       
