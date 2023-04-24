@@ -49,7 +49,7 @@ export default function Home() {
           .getPublicUrl(product.thumbnail_image)
         return {
           ...product,
-          discounted_price: discountPer,
+          discounted_price: discountPercentage,
           imgUrl: data.publicUrl,
         }
       })
