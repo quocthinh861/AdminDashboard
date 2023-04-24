@@ -38,9 +38,10 @@ export default function Home() {
 
       const updatedProducts = data.map((product) => {
         // calculate discount percentage
-        const discountPer = parseFloat(
-          (1 - product.sale_price / product.price).toFixed(2) * 100,
-        )
+        const discountPercentage = product.price > 0 && product.sale_price < product.price
+        ? parseFloat(((product.price - product.sale_price) / product.price * 100).toFixed(2))
+        : 0;
+      
 
         // get image url
         const { data } = supabase.storage
