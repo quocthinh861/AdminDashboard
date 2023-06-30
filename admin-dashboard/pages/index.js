@@ -29,32 +29,33 @@ export default function Home() {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const { data, error } = await supabase.from('products').select('*')
+      try {
+        const { data, error } = await supabase.from('products').select('*')
+        console.log("data", data)
 
-      if (error) {
-        console.log(error)
+        const updatedProducts = data.map((product) => {
+          // calculate discount percentage
+          const discountPercentage = product.sale_price > 0 && product.sale_price < product.price
+          ? parseFloat(((product.price - product.sale_price) / product.price * 100).toFixed(2))
+          : 0;
+        
+  
+          // get image url
+          const { data } = supabase.storage
+            .from('images')
+            .getPublicUrl(product.thumbnail_image)
+          return {
+            ...product,
+            discounted_price: discountPercentage,
+            imgUrl: data.publicUrl,
+          }
+        })
+  
+        setProducts(updatedProducts)
+      } catch (error) {
+        console.log("error", error)
         return
       }
-
-      const updatedProducts = data.map((product) => {
-        // calculate discount percentage
-        const discountPercentage = product.sale_price > 0 && product.sale_price < product.price
-        ? parseFloat(((product.price - product.sale_price) / product.price * 100).toFixed(2))
-        : 0;
-      
-
-        // get image url
-        const { data } = supabase.storage
-          .from('images')
-          .getPublicUrl(product.thumbnail_image)
-        return {
-          ...product,
-          discounted_price: discountPercentage,
-          imgUrl: data.publicUrl,
-        }
-      })
-
-      setProducts(updatedProducts)
     }
     fetchProducts()
   }, [])

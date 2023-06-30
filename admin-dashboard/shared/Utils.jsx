@@ -1,8 +1,5 @@
 import supabase from "../client/SuperbaseClient";
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
 
 export const uploadImage = async (file) => {
   const { data, error } = await supabase.storage
@@ -17,4 +14,3 @@ export const uploadImage = async (file) => {
   return data.path;
 };
 
-module.exports = { classNames, uploadImage };
