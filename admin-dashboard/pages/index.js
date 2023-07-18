@@ -107,7 +107,7 @@ export default function Home() {
           <Button className="text-blue-500">Add New Product</Button>
         </Link>
       </div>
-      <Table columns={columns} data={products} />
+      {/* <Table columns={columns} data={products} /> */}
     </>
   )
 }

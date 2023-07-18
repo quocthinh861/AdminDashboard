@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState, useEffect} from "react";
 import {
   useTable,
   useFilters,
@@ -51,6 +51,14 @@ export function AvatarCell({ value, column, row }) {
 }
 
 const Table = ({ columns, data }) => {
+  // Generate a unique key based on the data prop
+  const [tableData, setTableData] = useState(data);
+
+  useEffect(() => {
+    setTableData(data);
+    console.log(data)
+  }, [data]);
+
   const {
     getTableProps,
     getTableBodyProps,
@@ -78,7 +86,7 @@ const Table = ({ columns, data }) => {
     usePagination
   );
   return (
-    <>
+    <div>
       <div className="sm:flex sm:gap-x-2">
         {headerGroups.map((headerGroup) =>
           headerGroup.headers.map((column) =>
@@ -178,7 +186,7 @@ const Table = ({ columns, data }) => {
               Page <span className="font-medium">{state.pageIndex + 1}</span> of{" "}
               <span className="font-medium">{pageOptions.length}</span>
             </span>
-            <label>
+            {/* <label>
               <span className="sr-only">Items Per Page</span>
               <select
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
@@ -193,7 +201,7 @@ const Table = ({ columns, data }) => {
                   </option>
                 ))}
               </select>
-            </label>
+            </label> */}
           </div>
           <div>
             <nav
@@ -243,7 +251,7 @@ const Table = ({ columns, data }) => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

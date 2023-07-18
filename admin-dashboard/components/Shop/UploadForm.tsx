@@ -1,18 +1,17 @@
 import React, { useState, useRef } from "react";
 import supabase from "../../client/SuperbaseClient";
 import { uploadImage } from "../../shared/Utils";
+import Autocomplete from "react-google-autocomplete";
 
 function UploadForm() {
   // Refs
   const fileInputRef = useRef(null);
 
   // Form fields
-  const [productName, setProductName] = useState("");
-  const [productDescription, setProductDescription] = useState("");
-  const [thumbnailImage, setThumbnailImage] = useState("");
-  const [productPrice, setProductPrice] = useState();
+  const [shopName, setShopName] = useState("");
+  const [address, setAddress] = useState("");
+
   const [errors, setErrors] = useState({});
-  const [thumbnailImageUrl, setThumbnailImageUrl] = useState("");
 
   // State to show loading spinner
   const [isUploading, setIsUploading] = useState(false);
@@ -37,45 +36,27 @@ function UploadForm() {
       scrollToTop();
 
       try {
-        //Upload images to storage
-        const thumbnailImageKey = await uploadImage(thumbnailImage);
-
-        if (thumbnailImageKey === null) {
-          alert("Lỗi upload ảnh, vui lòng thử lại!");
-          return;
-        }
-
         // Insert product to database
-        const product = {
-          name: productName,
-          description: productDescription,
-          thumbnail_image: thumbnailImageKey,
-          price: productPrice,
+        const customer = {
+          name: address,
+          address: address,
         };
 
         const { data, error } = await supabase
-          .from("products")
-          .insert([product]);
+          .from("customers")
+          .insert([customer]);
 
         if (error) {
           throw error;
         }
 
         // Reset form fields
-        setProductName("");
-        setProductDescription("");
-        setThumbnailImage("");
-        setProductPrice(undefined);
+        setShopName("");
+        setAddress("");
 
         alert("Thêm sản phẩm thành công!");
       } catch (error) {
-        // Delete uploaded images
-        if (thumbnailImage !== null) {
-          await supabase.storage.from("images").remove([thumbnailImage]);
-        }
-
         alert("Đã xảy ra lỗi, vui lòng thử lại!");
-        console.log("error", error);
       } finally {
         setIsUploading(false);
       }
@@ -86,36 +67,20 @@ function UploadForm() {
     setTimeout(() => {
       window.scrollTo({
         top: 0,
-        behavior: 'smooth'
+        behavior: "smooth",
       });
     }, 100);
   }
 
-  const removeThumbImage = () => {
-    setThumbnailImage("");
-    setThumbnailImageUrl("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
   const validate = () => {
     let errors: any = {};
 
-    if (!productName) {
-      errors.productName = "Vui lòng nhập tên sản phẩm.";
+    if (!shopName) {
+      errors.customerName = "Vui lòng nhập tên sản phẩm.";
     }
 
-    if (!productDescription) {
-      errors.productDescription = "Vui lòng nhập mô tả sản phẩm.";
-    }
-
-    if (!thumbnailImage) {
-      errors.thumbnailImage = "Vui lòng chọn ảnh đại diện.";
-    }
-
-    if (!productPrice) {
-      errors.productPrice = "Vui lòng nhập giá sản phẩm.";
+    if (!address) {
+      errors.email = "Vui lòng nhập giá sản phẩm.";
     }
 
     setErrors(errors);
@@ -123,7 +88,7 @@ function UploadForm() {
   };
 
   return (
-    <>  
+    <>
       {
         // Hiển thị lỗi ở đây
         Object.keys(errors).length > 0 && (
@@ -172,81 +137,30 @@ function UploadForm() {
             htmlFor="product-name"
             className="block text-gray-700 font-medium mb-2"
           >
-            Tên sản phẩm
+            Tên cửa hàng
           </label>
           <input
             type="text"
-            id="product-name"
-            name="product-name"
+            id="shop-name"
+            name="shop-name"
             className="w-full py-2 px-4 bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 placeholder-gray-400 mt-1"
-            value={productName}
-            onChange={(event) => setProductName(event.target.value)}
+            value={shopName}
+            onChange={(event) => setShopName(event.target.value)}
           />
         </div>
         <div className="mb-4">
           <label
-            htmlFor="product-description"
+            htmlFor="customer-email"
             className="block text-gray-700 font-medium mb-2"
           >
-            Mô tả sản phẩm
+            Địa điểm
           </label>
-          <textarea
-            id="product-description"
-            name="product-description"
-            className="w-full py-2 px-4 bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 placeholder-gray-400 mt-1"
-            value={productDescription}
-            onChange={(event) => setProductDescription(event.target.value)}
-          />
-        </div>
-        <div className="mb-4">
-          <label
-            htmlFor="thumbnail-image"
-            className="block text-gray-700 font-medium mb-2"
-          >
-            Hình Thumbnail
-          </label>
-          <input
-            type="file"
-            id="thumbnail-image"
-            name="thumbnail-image"
-            accept="image/*"
-            ref={fileInputRef}
-            className="w-full py-2 px-4 bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 placeholder-gray-400 mt-1"
-            onChange={(event: any) => {
-              const file = event.target.files[0];
-              setThumbnailImage(file);
-              setThumbnailImageUrl(URL.createObjectURL(file));
+          <Autocomplete
+            apiKey={"AIzaSyCjo_9j3O1KlsrVY9lPM8_CLOrZrthaZ8A"}
+            onPlaceSelected={(place) => {
+              console.log(place);
             }}
-          />
-          {thumbnailImageUrl && (
-            <div className="relative w-48">
-              <button
-                type="button"
-                className="absolute top-0 right-0 mt-2 mr-2 rounded-full bg-red-500 text-white w-6 h-6 flex items-center justify-center"
-                onClick={() => removeThumbImage()}
-              >
-                X
-              </button>
-              <img src={thumbnailImageUrl} alt="Thumbnail" className="my-4" />
-            </div>
-          )}
-        </div>
-        <div className="mb-4">
-          <label
-            htmlFor="product-price"
-            className="block text-gray-700 font-medium mb-2"
-          >
-            Giá tiền
-          </label>
-          <input
-            type="number"
-            id="product-price"
-            min={0}
-            name="product-price"
             className="w-full py-2 px-4 bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 placeholder-gray-400 mt-1"
-            placeholder="Nhập giá bán"
-            value={productPrice}
-            onChange={(event: any) => setProductPrice(event.target.value)}
           />
         </div>
         <div className="flex justify-center">

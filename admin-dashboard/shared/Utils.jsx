@@ -14,3 +14,6 @@ export const uploadImage = async (file) => {
   return data.path;
 };
 
+export function classNames(...classes) {
+  return classes.filter(Boolean).join(" ");
+}
