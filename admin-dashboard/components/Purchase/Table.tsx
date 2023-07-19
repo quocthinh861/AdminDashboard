@@ -18,7 +18,9 @@ export default function Table({ data }) {
     if (column === "PRODUCT" || column === "SHOP") {
       setTableData((prev) => {
         return prev.sort((a, b) => {
-          const compareResult = a[column.toLowerCase()].localeCompare(b[column.toLowerCase()]);
+          const compareResult = a[column.toLowerCase()].localeCompare(
+            b[column.toLowerCase()]
+          );
           return isAscending ? compareResult : -compareResult;
         });
       });
@@ -65,61 +67,70 @@ export default function Table({ data }) {
     <div className="mt-4 flex flex-col">
       <div className="-my-2 overflow-x-auto -mx-4 sm:-mx-6 lg:-mx-8">
         <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-          <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                {headers.map((header, index) => (
-                  <th
-                    key={index}
-                    id={index}
-                    scope="col"
-                    className="group px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    onClick={() => handleSort(header.text)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <div className="flex items-center justify-between">
-                      {header.text}
-                      {sortConfig.column === header.text ? (
-                        <span>
-                          {sortConfig.isAscending ? (
-                            <SortUpIcon className="w-4 h-4 text-gray-400" />
-                          ) : (
-                            <SortDownIcon className="w-4 h-4 text-gray-400" />
-                          )}
-                        </span>
-                      ) : null}
-                    </div>
-                  </th>
-                ))}
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {tableData.map((row) => (
-                  <tr key={row.id}>
-                    <td className="px-6 py-4 whitespace-nowrap description-cell">
-                      {row.id}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap description-cell">
-                      {row.customer}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap description-cell">
-                      {row.shop}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap description-cell">
-                      <div className="flex items-center justify-between">
-                        {row.product}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap description-cell">
-                      {row.quantity}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap description-cell">
-                      {row.price}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {
+            // Table header
+            data.length > 0 ? (
+              <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    {headers.map((header, index) => (
+                      <th
+                        key={index}
+                        id={index}
+                        scope="col"
+                        className="group px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        onClick={() => handleSort(header.text)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <div className="flex items-center justify-between">
+                          {header.text}
+                          {sortConfig.column === header.text ? (
+                            <span>
+                              {sortConfig.isAscending ? (
+                                <SortUpIcon className="w-4 h-4 text-gray-400" />
+                              ) : (
+                                <SortDownIcon className="w-4 h-4 text-gray-400" />
+                              )}
+                            </span>
+                          ) : null}
+                        </div>
+                      </th>
+                    ))}
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {tableData.map((row) => (
+                      <tr key={row.id}>
+                        <td className="px-6 py-4 whitespace-nowrap description-cell">
+                          {row.id}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap description-cell">
+                          {row.customer}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap description-cell">
+                          {row.shop}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap description-cell">
+                          <div className="flex items-center justify-between">
+                            {row.product}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap description-cell">
+                          {row.quantity}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap description-cell">
+                          {row.price}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="flex justify-center items-center">
+                <p className="text-gray-500">No data</p>
+              </div>
+            )
+          }
         </div>
       </div>
     </div>
