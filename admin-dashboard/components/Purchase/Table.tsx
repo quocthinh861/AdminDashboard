@@ -1,13 +1,44 @@
 import React, { useEffect, useState } from "react";
+import { SortIcon, SortUpIcon, SortDownIcon } from "../../shared/Icons";
 
-export default function Table({data}) {
+export default function Table({ data }) {
+  const [sortConfig, setSortConfig] = useState({
+    column: "",
+    isAscending: true,
+  });
 
-  
+  const [tableData, setTableData] = useState([]);
 
-  // Filter
-  const [keyword, setKeyword] = useState("");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
+  useEffect(() => {
+    setTableData(data);
+  }, [data]);
+
+  useEffect(() => {
+    const { column, isAscending } = sortConfig;
+    if (column === "PRODUCT" || column === "SHOP") {
+      setTableData((prev) => {
+        return prev.sort((a, b) => {
+          const compareResult = a[column.toLowerCase()].localeCompare(b[column.toLowerCase()]);
+          return isAscending ? compareResult : -compareResult;
+        });
+      });
+    }
+  }, [sortConfig]);
+
+  const handleSort = (column) => {
+    setSortConfig((prev) => ({
+      column,
+      isAscending: prev.column === column ? !prev.isAscending : true,
+    }));
+  };
+
+  const [hasMounted, setHasMounted] = React.useState(false);
+  React.useEffect(() => {
+    setHasMounted(true);
+  }, []);
+  if (!hasMounted) {
+    return null;
+  }
 
   const headers = [
     {
@@ -37,44 +68,55 @@ export default function Table({data}) {
           <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
-                {headers.map((header, index) => {
-                  return (
-                    <th
-                      scope="col"
-                      className="group px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      <div className="flex items-center justify-between">
-                        {header.text}
-                      </div>
-                    </th>
-                  );
-                })}
+                {headers.map((header, index) => (
+                  <th
+                    key={index}
+                    id={index}
+                    scope="col"
+                    className="group px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    onClick={() => handleSort(header.text)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <div className="flex items-center justify-between">
+                      {header.text}
+                      {sortConfig.column === header.text ? (
+                        <span>
+                          {sortConfig.isAscending ? (
+                            <SortUpIcon className="w-4 h-4 text-gray-400" />
+                          ) : (
+                            <SortDownIcon className="w-4 h-4 text-gray-400" />
+                          )}
+                        </span>
+                      ) : null}
+                    </div>
+                  </th>
+                ))}
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {data.map((row, i) => {
-                  return (
-                    <tr key={i}>
-                      <td className="px-6 py-4 whitespace-nowrap description-cell">
-                        {row.id}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap description-cell">
-                        {row.customer}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap description-cell">
-                        {row.shop}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap description-cell">
+                {tableData.map((row) => (
+                  <tr key={row.id}>
+                    <td className="px-6 py-4 whitespace-nowrap description-cell">
+                      {row.id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap description-cell">
+                      {row.customer}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap description-cell">
+                      {row.shop}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap description-cell">
+                      <div className="flex items-center justify-between">
                         {row.product}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap description-cell">
-                        {row.quantity}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap description-cell">
-                        {row.total}
-                      </td>
-                    </tr>
-                  );
-                })}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap description-cell">
+                      {row.quantity}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap description-cell">
+                      {row.price}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

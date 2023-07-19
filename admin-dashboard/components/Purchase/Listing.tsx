@@ -1,69 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "../Button";
 import UploadForm from "./UploadForm";
 import Table from "./Table";
 
 export default function Listing() {
-  const [keyword, setKeyword] = useState("");
-  const [data, setData] = useState([
-    {
-      id: 3,
-      customer: "Nguyễn Văn C",
-      shop: "Cửa hàng ABC",
-      product: "Sản phẩm 1",
-      quantity: 1,
-      total: "100,000",
-    },
-    {
-      id: 4,
-      customer: "Nguyễn Văn D",
-      shop: "Cửa hàng ABC (239 đường 3/2, P.10, Q.10, TP.HCM)",
-      product: "Sản phẩm 2",
-      quantity: 2,
-      price: "200,000",
-    },
-  ]);
+  const [data, setData] = useState([]);
 
-  const columns = React.useMemo(
-    () => [
+  useEffect(() => {
+    setData([
       {
-        Header: 'ID',
-        accessor: 'id',
+        id: 3,
+        customer: "Nguyễn Văn C",
+        shop: "Cửa hàng ABC",
+        product: "Sản phẩm 1",
+        quantity: 1,
+        price: "100,000",
       },
       {
-        Header: 'Customer',
-        accessor: 'customer',
+        id: 4,
+        customer: "Nguyễn Văn D",
+        shop: "Cửa hàng ABC (239 đường 3/2, P.10, Q.10, TP.HCM)",
+        product: "Sản phẩm 2",
+        quantity: 2,
+        price: "200,000",
       },
-      {
-        Header: 'Shop',
-        accessor: 'shop',
-      },
-      {
-        Header: 'Product',
-        accessor: 'product',
-      },
-      {
-        Header: 'Qty',
-        accessor: 'quantity',
-      },
-      {
-        Header: 'Price',
-        accessor: 'price',
-      },
-    ]
-  )
+    ]);
+  }, []);
 
-  const handleClickAdd = () => {
-    console.log("Click Add");
-    setData([]);
-    // setContent(<UploadForm />);
-  };
 
-  const [content, setContent] = useState(
+  return (
     <>
       <div className="flex justify-between items-center mb-4">
-        <a onClick={handleClickAdd}>
+        <a>
           <Button className="text-blue-500">Add Purchase</Button>
         </a>
       </div>
@@ -94,11 +63,16 @@ export default function Listing() {
             className="w-40 py-1 px-2 bg-white-200 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 placeholder-gray-400 mt-1"
           />
         </div>
-        <Button className="text-green-500">Filter</Button>
+        <Button
+          className="text-green-500"
+          onClick={() => {
+            
+          }}
+        >
+          Filter
+        </Button>
       </div>
-      <Table />
+      <Table data={data} />
     </>
   );
-
-  return <>{content}</>;
 }
